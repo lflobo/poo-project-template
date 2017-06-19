@@ -2,6 +2,7 @@ package pt.ipb.poo.projeto;
 
 import pt.ipb.poo.projeto.data.DataManager;
 import pt.ipb.poo.projeto.database.Carro;
+import pt.ipb.poo.projeto.database.Pessoa;
 import pt.ipb.poo.projeto.menu.Menu;
 
 import java.io.BufferedReader;
@@ -18,8 +19,8 @@ public class Main {
     }
 
     public Main() {
-        // Ligar à BD                 hostname,   database,   user,   pass
-        dataManager = new DataManager("localhost", "trabalho", "root", "1234");
+        // Ligar à BD                 hostname,    database,   user,   pass
+        dataManager = new DataManager("localhost", "trabalho", "trabalho", "1234");
 
         // Criar um menu com as opções
         // O número da opção obedece à ordem de 'addOption' começando por 1
@@ -30,6 +31,9 @@ public class Main {
         menu.addOption("Mostrar Carro (por N.º Chassis)");
         menu.addOption("Listar Carros (por Marca)");
         menu.addOption("Apagar um Carro");
+        menu.addOption("Obter Pessoa");
+        menu.addOption("Procurar Pessoas (por nome)");
+        menu.addOption("Pergunta m'uma coisa e mostra'mum sub-menu");
 
         // loop infinito
         while (true) {
@@ -54,10 +58,80 @@ public class Main {
                 case 6:
                     apagarCarro();
                     break;
+                case 7:
+                    obterPessoa();
+                    break;
+                case 8:
+                    procurarPessoaPorNome();
+                    break;
+                case 9:
+                    perguntaMumaCoisaEMostraMumSubMenu();
+                    break;
                 default:
                     System.out.println("Opção inválida!");
             }
         }
+    }
+
+    private void perguntaMumaCoisaEMostraMumSubMenu() {
+        String coisa = pedirTexto("Uma coisa");
+
+        Menu subMenu = new Menu("Mum Sub Menu");
+        subMenu.addOption("Opção 1");
+        subMenu.addOption("Opção 2");
+        subMenu.addOption("Opção 3");
+        subMenu.addOption("Menu Anterior");
+
+        while (true) {
+            switch (subMenu.print()) {
+                case 1:
+                    System.out.println("Ouch 1!");
+                    break;
+                case 2:
+                    System.out.println("Ouch 2!");
+                    break;
+                case 3:
+                    System.out.println("Ouch 3!");
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Opção Inválida");
+            }
+        }
+    }
+
+    private void procurarPessoaPorNome() {
+        String nome = pedirTexto("Introduza um Nome");
+        List<Pessoa> pessoas = dataManager.obterPessoasPorNome(nome);
+        if (pessoas.isEmpty()) {
+            System.out.println("AVISO: A pesquisa não devolveu resultados");
+        } else {
+            // só entra se !pessoas.isEmpty()
+            for (Pessoa pessoa : pessoas) {
+                printPessoa(pessoa);
+            }
+        }
+    }
+
+    private void obterPessoa() {
+        Integer pessoaId = pedirInteiro("ID da Pessoa");
+        Pessoa pessoa = dataManager.obterPessoa(pessoaId);
+        if (pessoa != null) {
+            printPessoa(pessoa);
+        } else {
+            System.out.println("ERRO: A pessoa não existe");
+        }
+    }
+
+    private void printPessoa(Pessoa pessoa) {
+        System.out.println("===[ Informação do Carro ]=====================");
+        System.out.println("= ID da Pessoa: " + pessoa.getPessoaId());
+        System.out.println("= Nome: " + pessoa.getNome());
+        System.out.println("= Grupo ID: " + pessoa.getGrupoId());
+        System.out.println("= Notas: " + pessoa.getNotas());
+        System.out.println("= Data Nasc.: " + pessoa.getDataNascimento());
+        System.out.println("===============================================");
     }
 
     private void criarCarro() {

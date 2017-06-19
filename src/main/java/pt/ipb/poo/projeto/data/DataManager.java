@@ -2,6 +2,7 @@ package pt.ipb.poo.projeto.data;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 import pt.ipb.poo.projeto.database.Carro;
+import pt.ipb.poo.projeto.database.Pessoa;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -25,6 +26,56 @@ public class DataManager {
         dataSource.setPassword(password);
         this.database = dataSource;
     }
+
+    public Pessoa obterPessoa(Integer pessoaId) {
+        try (Connection con = database.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM pessoa WHERE pessoa_id = ?")) {
+                statement.setInt(1, pessoaId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if(resultSet.next()) {
+                        return resultSetToPessoa(resultSet);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+
+    private Pessoa resultSetToPessoa(ResultSet resultSet) throws SQLException {
+        Pessoa pessoa = new Pessoa();
+        pessoa.setPessoaId(resultSet.getInt("pessoa_id"));
+        pessoa.setGrupoId(resultSet.getInt("grupo_id"));
+        pessoa.setNome(resultSet.getString("nome"));
+        pessoa.setNotas(resultSet.getString("notas"));
+        pessoa.setDataNascimento(resultSet.getDate("data_nascimento"));
+        return pessoa;
+    }
+
+    public List<Pessoa> obterPessoasPorNome(String nome) {
+        try (Connection con = database.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM pessoa WHERE nome LIKE ?")) {
+                statement.setString(1, "%" + nome + "%");
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    List<Pessoa> pessoaList = new ArrayList<>();
+                    while (resultSet.next()) {
+                        Pessoa pessoa = resultSetToPessoa(resultSet);
+                        pessoaList.add(pessoa);
+                    }
+                    return pessoaList;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+
 
     /**
      * Extrai a informação de um resultSet resultante de um query à tabela CARRO e contrói um
